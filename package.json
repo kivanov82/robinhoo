@@ -1,0 +1,34 @@
+{
+  "name": "robinhoo",
+  "version": "1.0.0",
+  "license": "MIT",
+  "description": "",
+  "main": "truffle-config.js",
+  "scripts": {
+    "deploy-kovan": "truffle deploy --network kovan --reset",
+    "deploy-dev": "truffle deploy --network development --reset --compile-all",
+    "deploy-mainnet-partial": "truffle migrate --network mainnet -f 1 --to 1 compile --all",
+    "test": "truffle test",
+    "test-no-deploy": "truffle test --migrations_directory test",
+    "test-all": "npm run deploy-dev && ./scripts/test-runner.sh --compile-none --migrations_directory test"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "^4.9.2",
+    "@openzeppelin/test-helpers": "^0.5.11",
+    "@openzeppelin/truffle-upgrades": "^1.7.0",
+    "@truffle/hdwallet-provider": "^1.4.0",
+    "bignumber.js": "^9.0.1",
+    "truffle-test-utils": "^0.1.0"
+  },
+  "devDependencies": {
+    "chai": "^4.3.4",
+    "chai-bn": "^0.2.1",
+    "dotenv": "^8.6.0",
+    "eth-gas-reporter": "^0.2.22",
+    "eth-sig-util": "^3.0.1",
+    "mocha": "^8.4.0",
+    "truffle-assertions": "^0.9.2",
+    "truffle-contract-size": "^2.0.1",
+    "truffle-plugin-verify": "^0.5.10"
+  }
+}
