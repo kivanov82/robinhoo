@@ -49,11 +49,11 @@ module.exports = {
       provider: () =>
           new HDWalletProvider(
               [process.env.PRIVATE_KEY],
-              `wss://mainnet.infura.io/ws/v3/${[process.env.INFURA]}`
+              `https://spring-blue-tree.quiknode.pro/${process.env.INFURA}/`
           ),
       network_id: 1,
       gas: 8000000,
-      gasPrice: 8000000000, //8gWei
+      gasPrice: 15000000000, //15gWei
       networkCheckTimeout: 1000000,
       timeoutBlocks: 400,
       skipDryRun: true,
@@ -70,5 +70,11 @@ module.exports = {
     solc: {
       version: "0.8.18",      // Fetch exact version from solc-bin
     }
-  }
+  },
+
+  plugins: ["truffle-contract-size", "truffle-plugin-verify"],
+
+  api_keys: {
+    etherscan: process.env.ETHERSCAN_API_KEY
+  },
 };

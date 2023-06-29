@@ -10,10 +10,11 @@ Based on Inedible Coin
 https://www.inediblecoin.com/
 0x3486b751a36f731a1bebff779374bad635864919
 
-The difference is that RobinHoo **allows** sandwich attack BUT it tries to punish the bot
-and forcibly take a fee from it's balance and give it to the victim.
-In case it can't, the 2nd sandwich transaction will be reverted.
+The difference is that RobinHoo **allows** sandwich attack BUT it tries to punish the bot - taking
+a small fee from it's balance and giving it back to the victim.
+In case it can't, the 2nd sandwiching transaction will revert.
 
+Note: this version doesn't prevent double sandwiching yet.
 **/
 
 contract RobinHoo is ERC20Votes {
@@ -24,14 +25,13 @@ contract RobinHoo is ERC20Votes {
     // The centralization here shouldn't cause any problem.
     address public admin;
     address public pendingAdmin;
+    uint256 public punishmentFee;
 
     // Dexes that you want to limit interaction with.
     mapping(address => uint256) private dexSwaps;
     // dex => actor
     mapping(address => address) private blockActor;
     address private victim;
-
-    uint256 public punishmentFee;
 
     constructor()
     ERC20("RobinHoo Coin", "ROBINHOO")
@@ -64,13 +64,12 @@ contract RobinHoo is ERC20Votes {
             if (toSwap < block.timestamp) {// No interactions have occurred this block.
                 dexSwaps[_to] = block.timestamp;
                 blockActor[_to] = _from;
-                blockActor[_from] = address(0);
             } else if (toSwap == block.timestamp) {// 1 interaction has occurred this block.
                 dexSwaps[_to] = block.timestamp + 1;
                 victim = _from;
             } else {
-                address _badGuy = blockActor[_from];
-                blockActor[_from] = address(0);
+                address _badGuy = blockActor[_to];
+                blockActor[_to] = address(0);
                 _punishOrFail(victim, _badGuy, _amount);
             }
         }
@@ -79,13 +78,12 @@ contract RobinHoo is ERC20Votes {
             if (fromSwap < block.timestamp) {
                 dexSwaps[_from] = block.timestamp;
                 blockActor[_from] = _to;
-                blockActor[_to] = address(0);
             } else if (fromSwap == block.timestamp) {
                 dexSwaps[_from] = block.timestamp + 1;
                 victim = _to;
             } else {
-                address _badGuy = blockActor[_to];
-                blockActor[_to] = address(0);
+                address _badGuy = blockActor[_from];
+                blockActor[_from] = address(0);
                 _punishOrFail(victim, _badGuy, _amount);
             }
         }
