@@ -15,6 +15,7 @@ https://www.inediblecoin.com/
 The difference is that RobinHoo **allows** sandwich attack BUT it tries to punish the bot - taking
 a small fee from it's balance and giving it back to the victim.
 In case it can't, sandwiching transactions will revert.
+
 Note: it also handles the situation with multiple sandwiching transaction AND multiple attempts per block.
 BOT : B
 VICTIM : V
@@ -37,7 +38,7 @@ Multiple attempts:
 - V B
 - B1 S
 - B2 B
-- V B
+- V2 B
 - B2 S
 **/
 
@@ -60,6 +61,8 @@ contract RobinHoo is ERC20Votes {
     EnumerableMap.AddressToUintMap private toDexTrades;
     EnumerableMap.AddressToUintMap private fromDexTrades;
     EnumerableSet.AddressSet private blockActors;
+    address private lastActorToDex;
+    address private lastActorFromDex;
 
     constructor()
     ERC20("RobinHoo Coin", "ROBINHOO")
@@ -75,7 +78,9 @@ contract RobinHoo is ERC20Votes {
     }
 
     /**
-     * @dev On every 3rd trading transaction will check if there was an opposite 2nd tx (and 1st was the same direction)
+     * @dev In each block, on every trading transaction starting from the 3rd, will check if
+     * - there was an opposite tx by same actor
+     * - there was someone (victim) doing a trade same direction
      * and will try to forcibly take some amount back to the victim
      * @param _to Address that the funds are being sent to.
      * @param _from Address that the funds are being sent from.
@@ -106,8 +111,11 @@ contract RobinHoo is ERC20Votes {
             } else if (toSwap == block.timestamp) {     // 1 interaction has occurred this block.
                 dexSwaps[_to] = block.timestamp + 1;
             } else {                                    // 3+
-                _punishOrFail(_assertBot(fromDexTrades, _from), _from, _amount);
+                if (fromDexTrades.contains(_from)) {
+                    _punishOrFail(lastActorFromDex, _from, _amount);
+                }
             }
+            lastActorToDex = _from;
         }
 
         if (fromSwap > 0) {
@@ -118,22 +126,23 @@ contract RobinHoo is ERC20Votes {
             } else if (fromSwap == block.timestamp) {
                 dexSwaps[_from] = block.timestamp + 1;
             } else {
-                _punishOrFail(_assertBot(toDexTrades, _to), _to, _amount);
+                if (toDexTrades.contains(_to)) {
+                    _punishOrFail(lastActorToDex, _to, _amount);
+                }
             }
+            lastActorFromDex = _to;
         }
     }
 
-    function _assertBot(EnumerableMap.AddressToUintMap storage _oppositeTrades, address _actor) internal view returns (address) {
-        if (_oppositeTrades.contains(_actor)) {
-            return blockActors.at(blockActors.length() - 1);    //last unique
-        }
-        return address(0);
-    }
-
+    /**
+     * @dev Calculates the punishment fee and moves it to the victim
+     * @param _victim Harmed address
+     * @param _badGuy Bot
+     * @param _amount Trading amount bot uses
+    **/
     function _punishOrFail(address _victim, address _badGuy, uint256 _amount)
     internal
     {
-        if (_victim == address(0)) return;  //no one hurt for this 3+ tx
         if (_victim == _badGuy) return;     //opposite trades by same actor
         _transfer(_badGuy, _victim, _amount * punishmentFee / PRECISION / 100);
 
@@ -159,6 +168,7 @@ contract RobinHoo is ERC20Votes {
     external
     onlyAdmin
     {
+        require(_newFee > PRECISION / 10);
         punishmentFee = _newFee;
     }
 

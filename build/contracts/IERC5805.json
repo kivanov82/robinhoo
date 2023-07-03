@@ -333,7 +333,7 @@
   },
   "networks": {},
   "schemaVersion": "3.4.14",
-  "updatedAt": "2023-06-30T13:43:33.982Z",
+  "updatedAt": "2023-07-01T10:29:14.966Z",
   "devdoc": {
     "events": {
       "DelegateChanged(address,address,address)": {
