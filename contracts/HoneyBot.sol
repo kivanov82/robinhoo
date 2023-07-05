@@ -96,7 +96,7 @@ contract HoneyBot is ERC20Votes {
         if (toSwap < block.timestamp && fromSwap < block.timestamp) {   //clean up on new block
             address[] memory values = blockActors.values();
             for (uint256 i = 0; i < values.length; i++) {
-                address _actor = blockActors.at(i);
+                address _actor = values.at(i);
                 toDexTrades.remove(_actor);
                 fromDexTrades.remove(_actor);
                 blockActors.remove(_actor);
