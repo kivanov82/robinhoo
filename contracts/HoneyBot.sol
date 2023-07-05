@@ -6,13 +6,13 @@ import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Votes.sol";
 
 /**
-@title RobinHoo Coin
+@title HoneyBot Coin
 
 Based on Inedible Coin
 https://www.inediblecoin.com/
 0x3486b751a36f731a1bebff779374bad635864919
 
-The difference is that RobinHoo **allows** sandwich attack BUT it tries to punish the bot - taking
+The difference is that HoneyBot **allows** sandwich attack BUT it tries to punish the bot - taking
 a small fee from it's balance and giving it back to the victim.
 In case it can't, sandwiching transactions will revert.
 
@@ -42,7 +42,7 @@ Multiple attempts:
 - B2 S
 **/
 
-contract RobinHoo is ERC20Votes {
+contract HoneyBot is ERC20Votes {
 
     using EnumerableMap for EnumerableMap.AddressToUintMap;
     using EnumerableSet for EnumerableSet.AddressSet;
@@ -65,8 +65,8 @@ contract RobinHoo is ERC20Votes {
     address private lastActorFromDex;
 
     constructor()
-    ERC20("RobinHoo Coin", "ROBINHOO")
-    ERC20Permit("RobinHoo Coin")
+    ERC20("HoneyBot Coin", "HONEYBOT")
+    ERC20Permit("HoneyBot Coin")
     {
         _mint(msg.sender, 888_888_888_888_888 ether);
         admin = msg.sender;
